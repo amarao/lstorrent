@@ -35,26 +35,19 @@ item_t* get_record(item_t* root,const unsigned char* name){
     return NULL;
 }
 
-typedef struct{
-    char* filename;
-    int path_parts_number;
-    char **path_parts;
-    long long size;
-}file_t;
 
-typedef struct{
-    file_t file;
-    item_t* root;
-    int current;
-}file_enum_t;
+typedef enum {
+    skip,
+    filename_only,
+    filename_and_paths
+}options_t;
 
-file_enum_t* get_first_file (item_t* root){
-    file_enum_t* fe=calloc(1,sizeof(file_enum_t));
-    fe->root=get_record(get_record(root,"info"),"files");
-    if (!fe->root)
-        return NULL;
-    
-}
+typedef options_t (*pass_filter_callback_t(item_t* item));
 
-int get_next_file (file_enum_t* fe){
+int process_filelist(item_t* root, pass_filter_callback_t *filter){
+    item_t* file_info=get_record(get_record(root,"info"),"files");
+    item_t* cur;
+    if (!file_info)
+        return 0;
+
 }
