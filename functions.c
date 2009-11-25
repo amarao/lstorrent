@@ -43,10 +43,29 @@ typedef enum {
 }options_t;
 
 typedef options_t (*pass_filter_callback_t(item_t* item));
+/*right now return 0/1 to filter files*/
+
+void print_file_data(item_t* f){
+}
 
 int process_filelist(item_t* root, pass_filter_callback_t *filter){
-    item_t* file_info=get_record(get_record(root,"info"),"files");
-    item_t* cur;
-    if (!file_info)
+    item_t* info=get_record(root,"info");
+    item_t* filelist=get_record(info,"files");
+    int c;
+    if (!info)
         return 0;
+    /*we have to cases: 'info' contains an files record for mutlifile torrent or contain data about file for single-file torrent*/
+    if(filelist){
+        if(filter(info)){
+            print_file_data(info);
+        }
+    /*first case - mulitfile torrent*/
+    }else{ /*second case - single-file torrent*/
+        for(c=0;c<filelist->list->count;c++){
+            if(filter(filelist->list->array+c)){
+                print_file_data(filelist->list->array+c);
+            }
+        }
+    }
 }
+
