@@ -11,6 +11,10 @@ void print_item(item_t* item,int tabs){
     int dc,lc;
     dict_t* d;
     list_t* l;
+    if (!item){
+        printf("Item is NULL!\n");
+        return;
+    }
     switch(item->type){
         case num:
             for (c=0;c<tabs;c++)
@@ -54,6 +58,6 @@ void debug(item_t* res){
     item_t* search;
     print_item(res,0);
     printf("-------------------------------------------\n");
-    search=get_record(get_record(res,"info"),"files");
+    search=get_record(res,"info");
     print_item(search,0);
 }

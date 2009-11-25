@@ -194,6 +194,6 @@ item_t* decode(unsigned char *buf, int *index, size_t size){
 
 item_t* bdecode(unsigned char*buf, size_t size){
 /*decorator for export*/
-    int pos;
+    int pos=0;
     return decode(buf,&pos,size);
 }

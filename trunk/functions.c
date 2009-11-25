@@ -49,5 +49,4 @@ int process_filelist(item_t* root, pass_filter_callback_t *filter){
     item_t* cur;
     if (!file_info)
         return 0;
-
 }
