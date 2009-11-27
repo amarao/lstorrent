@@ -22,18 +22,21 @@ int main(int argc, char* argv[]){
     int size=0;
     FILE* f;
     item_t * res;
+    int c;
     if (argc<2){
         puts(err_help);
         exit(0);
     }
-    f=fopen(argv[1],"rb");
-    if(!f){
-        printf("%s\n",strerror(errno));
-        return -1;
+    for(c=1;c<argc;c++){
+        f=fopen(argv[c],"rb");
+        if(!f){
+            printf("%s\n",strerror(errno));
+            return -1;
+        }
+        size=fread(buf,1,MAX_FILE,f);
+        fclose(f);
+        res=bdecode(buf,size);   
+        debug(res);
     }
-    size=fread(buf,1,MAX_FILE,f);
-    fclose(f);
-    res=bdecode(buf,size);   
-    debug(res);
     return 0;
 }
