@@ -53,11 +53,13 @@ void print_item(item_t* item,int tabs){
     }
 }
 
+options_t simple_yes(item_t* item){
+    return 1;
+}
 
 void debug(item_t* res){
     item_t* search;
-    print_item(res,0);
+//    print_item(res,0);
     printf("-------------------------------------------\n");
-    search=get_record(res,"info");
-    print_item(search,0);
+    process_filelist(res,&simple_yes); 
 }
