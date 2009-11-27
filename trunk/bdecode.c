@@ -28,7 +28,6 @@
 #define NEXT (*index)++; if (*index>size) oops_message (err_uncomplete,__LINE__);
 #define CUR (buf[*index])
 
-#define MAX_RECORD 10000
 
 item_t* decode(unsigned char *buf, int *index, size_t size);
 
