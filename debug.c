@@ -17,49 +17,52 @@ void print_item(item_t* item,int tabs){
     }
     switch(item->type){
         case num:
-            for (c=0;c<tabs;c++)
-                printf("    ");
-            printf("%lli",item->num);
+            printf("num(%lli)",item->num);
             break;
         case str:
-           for (c=0;c<tabs;c++)
-                printf("    ");
-            printf("%s",item->str);
+            printf("str(%s)",item->str);
             break;
         case dict:
             d=item->dict;
+            printf("dict(\n");
             for( dc=0;dc<d->count;dc++){
-                for (c=0;c<tabs;c++)
+                for (c=0;c<tabs+1;c++)
                     printf("    ");
-                printf("(d)\n");
-                print_item(d->keys+dc,tabs+1);
-                printf(":");
-                print_item(d->values+dc,tabs+1);
+                printf("key (%d/%d)=",dc,d->count);
+                print_item(d->keys+dc,tabs+2);
+                printf("\n");
+                for (c=0;c<tabs+1;c++)
+                    printf("    ");
+                printf("value (%d/%d)=",dc,d->count);
+                print_item(d->values+dc,tabs+2);
                 printf("\n");
             }
-            printf("\n");
+            for (c=0;c<tabs;c++)
+                printf("    ");
+            printf(" ) //dict end\n");
             break;
         case list:
             l=item->list;
+            printf("list(\n");
             for( lc=0;lc<l->count;lc++){
                 for (c=0;c<tabs;c++)
                     printf("    ");
-                printf("(l)\n");
+                printf("(l%d/%d)=",lc,l->count);
                 print_item(l->array+lc,tabs+1);
                 printf("\n");
             }
             printf("\n");
+            for (c=0;c<tabs;c++)
+                printf("    ");
+            printf(" ) //list end\n");
             break;
     }
 }
 
-options_t simple_yes(item_t* item){
-    return 1;
-}
 
 void debug(item_t* res){
     item_t* search;
-//    print_item(res,0);
-//    printf("-------------------------------------------\n");
-    process_filelist(res,&simple_yes); 
+    print_item(res,0);
+    printf("-------------------------------------------\n");
+    process_filelist(res,1); 
 }

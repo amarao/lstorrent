@@ -17,7 +17,8 @@
 
 
 int main(int argc, char* argv[]){
-#define MAX_FILE 1024*1024
+#define MAX_FILE 10*1024*1024
+/*Note: I understand, than this is lame, I make normal reading later, when deside, how to read it (by single fread or by streamed reading on-demand, like media files*/
     unsigned char* buf=malloc(MAX_FILE);
     int size=0;
     FILE* f;
