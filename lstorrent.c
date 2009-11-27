@@ -34,6 +34,8 @@ int main(int argc, char* argv[]){
             return -1;
         }
         size=fread(buf,1,MAX_FILE,f);
+        if (size==MAX_FILE)
+            oops(err_torrent_too_big);
         fclose(f);
         res=bdecode(buf,size);   
         debug(res);
