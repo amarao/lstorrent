@@ -60,6 +60,6 @@ options_t simple_yes(item_t* item){
 void debug(item_t* res){
     item_t* search;
 //    print_item(res,0);
-    printf("-------------------------------------------\n");
+//    printf("-------------------------------------------\n");
     process_filelist(res,&simple_yes); 
 }
