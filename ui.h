@@ -9,7 +9,6 @@ extern const char* err_torrent_too_big;
 extern const char* err_nostat;
 extern const char* err_empty;
 extern const char* err_noread;
-#define oops(a) oops_message(a,__LINE__);
-void oops_message(const char* message,int line);
+#define oops(a) oops_message(a,__FILE__,__LINE__);   
 #endif
 

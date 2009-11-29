@@ -8,7 +8,6 @@
 void print_item(item_t* item,int tabs){
 /* mostly for debug */
     int c;
-    int dc,lc;
     dict_t* d;
     list_t* l;
     if (!item){
@@ -25,31 +24,33 @@ void print_item(item_t* item,int tabs){
         case dict:
             d=item->dict;
             printf("dict(\n");
-            for( dc=0;dc<d->count;dc++){
+            while(d){
                 for (c=0;c<tabs+1;c++)
                     printf("    ");
-                printf("key (%d/%d)=",dc,d->count);
-                print_item(d->keys+dc,tabs+2);
+                printf("key =");
+                print_item(d->key,tabs+2);
                 printf("\n");
                 for (c=0;c<tabs+1;c++)
                     printf("    ");
-                printf("value (%d/%d)=",dc,d->count);
-                print_item(d->values+dc,tabs+2);
+                printf("value=");
+                print_item(d->value,tabs+2);
                 printf("\n");
+                d=d->next;
             }
             for (c=0;c<tabs;c++)
                 printf("    ");
             printf(" ) //dict end\n");
             break;
         case list:
-            l=item->list;
+            l=item->list->next;
             printf("list(\n");
-            for( lc=0;lc<l->count;lc++){
+            while(l){
                 for (c=0;c<tabs;c++)
                     printf("    ");
-                printf("(l%d/%d)=",lc,l->count);
-                print_item(l->array+lc,tabs+1);
+                printf("(value)=");
+                print_item(l->value,tabs+1);
                 printf("\n");
+                l=l->next;
             }
             printf("\n");
             for (c=0;c<tabs;c++)

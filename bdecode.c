@@ -25,8 +25,10 @@
 #include "bdecode.h"
 #include "ui.h"
 
+#define DEBUG 1
 #define NEXT (*index)++; if (*index>size) oops_message (err_uncomplete,__LINE__);
 #define CUR (buf[*index])
+#define MAX_STRING 15*1024*1024
 
 
 item_t* decode(unsigned char *buf, int *index, size_t size);
@@ -60,7 +62,6 @@ item_t* decode_num_t(unsigned char *buf, int *index, size_t size){
 unsigned char* decode_string(unsigned char *buf, int *index, size_t size){
     unsigned char* retval=NULL;
     size_t str_len=0;
-    #define MAX_STRING 1024*1024
     if( !buf || !index)
         oops(err_internal);        
     if (size<2)
@@ -78,8 +79,10 @@ unsigned char* decode_string(unsigned char *buf, int *index, size_t size){
     else{
         oops(err_bad);
     }
-    if (str_len<0 || str_len>MAX_STRING)
+    if (str_len<0 || str_len>MAX_STRING){
+        printf("%d\n",str_len);
         oops("string size is too big");
+    }
     retval=calloc(1,str_len+1);
     if (!retval)
         oops(err_nomem);
@@ -109,15 +112,16 @@ dict_t* decode_dict(unsigned char *buf, int *index, size_t size){
         oops(err_internal);        
     if (size<2)
         oops(err_bad);
-    if (CUR!='d')
-        oops(err_internal);
+    #ifdef DEBUG
+        if (CUR!='d')
+            oops(err_internal);
+    #endif
     NEXT;
     while(CUR!='e'){
         key=decode(buf,index,size);
         value=decode(buf,index,size);
-        /*here we simply drop 'pieces' record (with human-unreadable SHA1 hashes)*/
-        if(strcmp(key->str,"pieces"))
-            add_to_dict(retval,key,value);
+        if(strcmp(key->str,"pieces")) /*here we simply drop 'pieces' record (with human-unreadable SHA1 hashes)*/
+            add_to_dict(&retval,key,value);
         else{
             free(key->str);
             free(value->str);/*about 3/4 of all *.torrent's size - better to clean*/
@@ -148,7 +152,6 @@ list_t* decode_list(unsigned char *buf, int *index, size_t size){
     while(CUR!='e'){
         value=decode(buf,index,size);
         add_to_list(retval,value);
-//        NEXT;
     }
     NEXT;
     return retval;

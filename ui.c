@@ -13,8 +13,8 @@ const char* err_nostat="stat() error for file %s: %s\n";
 const char* err_empty="File %s is empty, skipping.\n";
 const char* err_noread="Unable to read %s: %s\n";
 
-void oops_message(const char* message,int line){
-    printf ("%d: %s\n",line,message);
+void oops_message(const char* message, const char* file,int line){
+    printf ("(%s:%d): %s\n",file,line,message);
     exit(-1);
 }
-#define oops(a) oops_message(a,__LINE__);   
+
