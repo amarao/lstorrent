@@ -63,6 +63,7 @@ int main(int argc, char* argv[]){
         fclose(f);
         buf[fsize]=0;
         res=bdecode(buf,size);   
+        free(buf);
         debug(res);
         /*process here*/
     }
