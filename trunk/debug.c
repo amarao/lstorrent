@@ -32,7 +32,7 @@ void print_item(item_t* item,int tabs){
                 for (c=0;c<tabs+1;c++)
                     printf("    ");
                 printf("key =");
-                print_item(d->key,tabs+2);
+                printf("%d",d->key); /*fix ,tabs+2*/
                 printf("\n");
                 for (c=0;c<tabs+1;c++)
                     printf("    ");

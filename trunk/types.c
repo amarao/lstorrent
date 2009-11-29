@@ -34,7 +34,7 @@ item_t* new_item(enum type_e type){
     return retval;    
 }
 
-void add_to_dict(dict_t** dict, item_t *new_key, item_t *new_value){
+void add_to_dict(dict_t** dict, char *new_key, item_t *new_value){
     /*skip duplicate key check, we are not python...*/
     dict_t* newdict=malloc(sizeof(dict_t));
     if(!newdict){
@@ -76,12 +76,8 @@ void del_dict(dict_t* dict){
     dict_t* temp;
     while(d){
         temp=d->next;
-        if(!d->value) oops("!");
+        free(d->key);
         del(d->value);
-        d->value=NULL;
-        if(!d->key) oops("!");
-        del(d->key);
-        d->key=NULL;
         free(d);
         d=temp;        
 

@@ -22,7 +22,7 @@ typedef struct{
 }item_t;
 
 typedef struct dict_s{
-    item_t* key;
+    char* key;
     item_t* value;
     struct dict_s* next;
 }dict_t;
@@ -41,7 +41,7 @@ typedef struct list_s{
 item_t* new_item(enum type_e type);
 list_t* new_list();
 #define new_dict() (NULL)
-void add_to_dict(dict_t** dict, item_t *new_key, item_t *new_value);
+void add_to_dict(dict_t** dict, char *new_key, item_t *new_value);
 void add_to_list(list_t* list, item_t* item);
 void del(item_t*);
 void del_dict(dict_t* dict);

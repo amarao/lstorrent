@@ -107,7 +107,7 @@ item_t* decode_str_t(unsigned char *buf, int *index, size_t size){
 
 dict_t* decode_dict(unsigned char *buf, int *index, size_t size){
     dict_t *retval=NULL;
-    item_t  *key;
+    char  *key;
     item_t  *value;
     if( !buf || !index)
         oops(err_internal);        
@@ -119,7 +119,7 @@ dict_t* decode_dict(unsigned char *buf, int *index, size_t size){
     #endif
     NEXT;
     while(CUR!='e'){
-        key=decode(buf,index,size);
+        key=decode_string(buf,index,size);
         value=decode(buf,index,size);
         add_to_dict(&retval,key,value);
 
