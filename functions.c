@@ -20,6 +20,7 @@
 #include <malloc.h>
 #include "types.h"
 #include "bdecode.h"
+#include "functions.h"
 #define DEBUG 1
 
 item_t* get_record(item_t* root,const unsigned char* name){
@@ -40,35 +41,48 @@ item_t* get_record(item_t* root,const unsigned char* name){
 
 
 
-void print_file_data(char* first_dir_name,item_t* f){
-    item_t* length=get_record(f,"length"); /*right now has no meaning*/
+void print_file_data(char* first_dir_name,item_t* f,int mode ){
+//    item_t* length=get_record(f,"length"); /*right now has no meaning*/
     item_t* path=get_record(f,"path");
-    item_t* name=get_record(f,"name");
     list_t* l;
-    if (name){
-        printf("%s\n",name->str);     
-        return;
-    }
+//    if(!(mode& MODE_DISPLAY_DIRS) && !(mode&MODE_DISPLAY_FILES))
+//        return;
+
     if (path){
-        if(first_dir_name)
-            printf("%s/",first_dir_name);
+
+        if(first_dir_name){
+            if(mode & MODE_DISPLAY_DIRS){
+                printf("%s",first_dir_name);
+                if(mode & MODE_DISPLAY_PATHS)
+                    printf("/");
+                else
+                    printf ("\n");                
+            }
+        }
+        
         l=path->list->next;
         while(l){
-            if(l!=path->list->next)
-                printf("/");                
-            printf("%s",l->value->str);
+            if(l->next && mode & MODE_DISPLAY_DIRS){
+                printf("%s",l->value->str);
+                if( mode & MODE_DISPLAY_PATHS)
+                    printf("/");
+                else
+                    printf("\n");
+            }
+            if(!l->next && mode & MODE_DISPLAY_FILES)
+                printf("%s",l->value->str);
+            if(!l->next && (mode & (MODE_DISPLAY_DIRS|MODE_DISPLAY_FILES)))
+                printf ("\n");
             l=l->next;
-        }
-        printf("\n");
-    }else{
-        printf("no path??\n");
-    }
+       }
 
+    }
 }
 
 int process_filelist(item_t* root, int display_flags){
     item_t* info=get_record(root,"info");
     item_t* filelist=get_record(info,"files");
+    item_t* name;
     item_t* name_item;
     char* first_dir_name;
     list_t* l;
@@ -77,8 +91,9 @@ int process_filelist(item_t* root, int display_flags){
     /*we have to cases: 'info' contains an files record for mutlifile torrent or contain data about file for single-file torrent*/
     if(!filelist){
     /*first case - single-file torrent without directories, we just print name*/
-        if(1){/*TODO here will be a case for display_flags*/
-            print_file_data(NULL,info);
+        if(display_flags&MODE_DISPLAY_FILES){
+            name=get_record(info,"name");
+            printf("%s\n",name->str);
         }
     /*second case - mulitfile torrent*/
     }else{ 
@@ -86,9 +101,7 @@ int process_filelist(item_t* root, int display_flags){
         first_dir_name=name_item->str;
         l=filelist->list->next; /*skip first entry (used for technical needs of list)*/
         while(l){
-            if(1){/*display_flags will be here*/
-                print_file_data(first_dir_name,l->value);
-            }
+            print_file_data(first_dir_name,l->value,display_flags);
             l=l->next;
         }
     }

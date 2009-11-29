@@ -29,6 +29,7 @@ int main(int argc, char* argv[]){
     item_t * res;
     struct stat st;    
     int c;
+    int display_mode=7;
     if (argc<2){
         puts(err_help);
         exit(0);
@@ -63,15 +64,11 @@ int main(int argc, char* argv[]){
             continue;
         }
         fclose(f);
- //       buf[fsize]=0;
+        buf[fsize]=0;
         res=bdecode(buf,size);   
-//        free(buf);
-        debug(res);
-        scanf("%d",size);
+        free(buf);
+        process_filelist(res, display_mode);
         del(res);
-//        res=bdecode(buf,size);   
-//       debug(res); 
-        /*process here*/
     }
 
     return 0;
