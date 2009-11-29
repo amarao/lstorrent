@@ -32,7 +32,7 @@ item_t* get_record(item_t* root,const unsigned char* name){
         return NULL;
     d=root->dict;
     while(d){
-        if(!strcmp(name,d->key->str))
+        if(!strcmp(name,d->key))
             return d->value;
         d=d->next;    
     }
