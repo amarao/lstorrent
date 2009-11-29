@@ -43,7 +43,7 @@ void add_to_dict(dict_t** dict, item_t *new_key, item_t *new_value){
     newdict->key=new_key;
     newdict->value=new_value;
     newdict->next=*dict;
-    /*dicts has no order, so we use this - reversing up the order*/
+    /*dicts has no order, so we use this - reversing order (FILO)*/
     *dict=newdict;
 }
 
@@ -60,12 +60,70 @@ void add_to_list(list_t* list, item_t* item){
         oops(err_nomem);
     if(!list)
         oops("shit");
-    if(list->next){
+    newlist->next=NULL;
+    newlist->last=NULL;
+    if(list->last){
         list->last->next=newlist;
     }else{/*adding fist real element to empty list*/
         list->next=newlist;
     }
     list->last=newlist;
     newlist->value=item;
+}
+
+void del_dict(dict_t* dict){
+    dict_t* d=dict;
+    dict_t* temp;
+    while(d){
+        temp=d->next;
+        if(!d->value) oops("!");
+        del(d->value);
+        d->value=NULL;
+        if(!d->key) oops("!");
+        del(d->key);
+        d->key=NULL;
+        free(d);
+        d=temp;        
+
+    }
+}
+
+void del_list(list_t* list){
+    list_t* l=list->next; /*note, that 1st element contains no data*/
+    list_t* temp;
+    while(l){
+        temp=l->next;
+        if(!l->value) oops("!");
+        del(l->value);
+        l->value=NULL;
+        free(l);
+        l=temp;
+    }
+    free(list);    
+}
+
+void del(item_t* i){
+    switch(i->type){
+        case num_et:
+            break;
+        case str_et:
+            if(!i->str) oops("!");
+           free(i->str);
+            i->str=NULL;
+            break;
+        case dict_et:
+            if(!i->dict) oops("!");
+            del_dict(i->dict);
+            i->dict=NULL;
+            break;
+        case list_et:
+            if(!i->list) oops("!");
+            del_list(i->list);
+            i->list=NULL;
+            break;
+        default:
+            printf("some shit in del");
+    }    
+    free(i);
 }
 

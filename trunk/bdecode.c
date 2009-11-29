@@ -30,8 +30,7 @@
 #define CUR (buf[*index])
 #define MAX_STRING 15*1024*1024
 
-
-item_t* decode(unsigned char *buf, int *index, size_t size);
+item_t* decode(unsigned char *buf, int *index, size_t size); /*for internal use only*/
 
 long long decode_num(unsigned char *buf, int *index, size_t size){
     long long retval=0;
@@ -54,7 +53,7 @@ long long decode_num(unsigned char *buf, int *index, size_t size){
 }
 
 item_t* decode_num_t(unsigned char *buf, int *index, size_t size){
-    item_t* retval=new_item(num);
+    item_t* retval=new_item(num_et);
     retval->num=decode_num(buf,index,size);
     return retval;
 }
@@ -83,21 +82,22 @@ unsigned char* decode_string(unsigned char *buf, int *index, size_t size){
         printf("%d\n",str_len);
         oops("string size is too big");
     }
-    retval=calloc(1,str_len+1);
-    if (!retval)
-        oops(err_nomem);
     if (str_len+(*index)>size)
         oops(err_uncomplete);
+    retval=malloc(str_len+1);
+    if (!retval)
+        oops(err_nomem);
     if (str_len>0){
         memcpy(retval,buf+(*index),str_len);
         (*index)+=str_len;
     }
+    retval[str_len]=0;
     return retval;
 }
 
 
 item_t* decode_str_t(unsigned char *buf, int *index, size_t size){
-    item_t* retval=new_item(str);
+    item_t* retval=new_item(str_et);
     retval->str=decode_string(buf,index,size);
     return retval;
 }
@@ -106,8 +106,9 @@ item_t* decode_str_t(unsigned char *buf, int *index, size_t size){
 
 
 dict_t* decode_dict(unsigned char *buf, int *index, size_t size){
-    dict_t* retval=new_dict();
-    item_t  *key,*value;
+    dict_t *retval=NULL;
+    item_t  *key;
+    item_t  *value;
     if( !buf || !index)
         oops(err_internal);        
     if (size<2)
@@ -120,21 +121,14 @@ dict_t* decode_dict(unsigned char *buf, int *index, size_t size){
     while(CUR!='e'){
         key=decode(buf,index,size);
         value=decode(buf,index,size);
-        if(strcmp(key->str,"pieces")) /*here we simply drop 'pieces' record (with human-unreadable SHA1 hashes)*/
-            add_to_dict(&retval,key,value);
-        else{
-            free(key->str);
-            free(value->str);/*about 3/4 of all *.torrent's size - better to clean*/
-            free(key);
-            free(value); 
-        }
+        add_to_dict(&retval,key,value);
     }
     NEXT;
     return retval;
 }
 
 item_t* decode_dict_t(unsigned char *buf, int *index, size_t size){
-    item_t* retval=new_item(dict);
+    item_t* retval=new_item(dict_et);
     retval->dict=decode_dict(buf,index,size);
     return retval;
 }
@@ -159,7 +153,7 @@ list_t* decode_list(unsigned char *buf, int *index, size_t size){
 
 
 item_t* decode_list_t(unsigned char *buf, int *index, size_t size){
-    item_t* retval=new_item(list);
+    item_t* retval=new_item(list_et);
     retval->list=decode_list(buf,index,size);
     return retval;
 }
