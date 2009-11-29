@@ -23,15 +23,17 @@
 #define DEBUG 1
 
 item_t* get_record(item_t* root,const unsigned char* name){
-    int d;
+/*records from dict*/
+    dict_t* d;
     if (!root)
         return NULL;
     if (root->type!=dict)
         return NULL;
-    for(d=0;d<root->dict->count;d++){
-        if(!strcmp(name,root->dict->keys[d].str)){
-            return root->dict->values + d;
-        }
+    d=root->dict;
+    while(d){
+        if(!strcmp(name,d->key->str))
+            return d->value;
+        d=d->next;    
     }
     return NULL;
 }
@@ -42,7 +44,7 @@ void print_file_data(char* first_dir_name,item_t* f){
     item_t* length=get_record(f,"length"); /*right now has no meaning*/
     item_t* path=get_record(f,"path");
     item_t* name=get_record(f,"name");
-    int c;
+    list_t* l;
     if (name){
         printf("%s\n",name->str);     
         return;
@@ -50,10 +52,12 @@ void print_file_data(char* first_dir_name,item_t* f){
     if (path){
         if(first_dir_name)
             printf("%s/",first_dir_name);
-        for(c=0;c<path->list->count;c++){
-            if(c)
-                printf("/");
-            printf("%s",path->list->array[c].str);
+        l=path->list->next;
+        while(l){
+            if(l!=path->list->next)
+                printf("/");                
+            printf("%s",l->value->str);
+            l=l->next;
         }
         printf("\n");
     }else{
@@ -67,7 +71,7 @@ int process_filelist(item_t* root, int display_flags){
     item_t* filelist=get_record(info,"files");
     item_t* name_item;
     char* first_dir_name;
-    int c;
+    list_t* l;
     if (!info)
         return 0;
     /*we have to cases: 'info' contains an files record for mutlifile torrent or contain data about file for single-file torrent*/
@@ -83,10 +87,12 @@ int process_filelist(item_t* root, int display_flags){
         #ifdef DEBUG 
             printf("name:%s\n",first_dir_name);
         #endif
-        for(c=0;c<filelist->list->count;c++){
+        l=filelist->list->next; /*skip first entry (used for technical needs of list)*/
+        while(l){
             if(1){/*display_flags will be here*/
-                print_file_data(first_dir_name,filelist->list->array+c);
+                print_file_data(first_dir_name,l->value);
             }
+            l=l->next;
         }
     }
 }

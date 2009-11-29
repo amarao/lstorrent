@@ -22,22 +22,26 @@ typedef struct{
 }item_t;
 
 typedef struct dict_s{
-    int count;
-    item_t* keys;
-    item_t* values;
+    item_t* key;
+    item_t* value;
+    struct dict_s* next;
 }dict_t;
 
 
 typedef struct list_s{
-    int count;
-    item_t* array;
+    union{
+        item_t* value;
+        struct list_s* last; /*last filled only for first element of list, so, actual value will be stored starts from second element*/
+    };
+    struct list_s* next;
+
 }list_t;
 
 /*Functions*/
 item_t* new_item(enum type_e type);
-dict_t* new_dict();
 list_t* new_list();
-void add_to_dict(dict_t* dict, item_t *new_key, item_t *new_value);
+#define new_dict() (NULL)
+void add_to_dict(dict_t** dict, item_t *new_key, item_t *new_value);
 void add_to_list(list_t* list, item_t* item);
 
 #endif
