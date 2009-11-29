@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include "ui.h"
 #include "types.h"
-#define MAX_RECORD 1000000
+#define MAX_RECORD 100000
 
 list_t* new_list();
 dict_t* new_dict();
