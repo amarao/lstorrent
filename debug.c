@@ -62,7 +62,7 @@ void print_item(item_t* item,int tabs){
 
 void debug(item_t* res){
     item_t* search;
-    print_item(res,0);
-    printf("-------------------------------------------\n");
+//    print_item(res,0);
+//    printf("-------------------------------------------\n");
     process_filelist(res,1); 
 }
