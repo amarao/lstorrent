@@ -20,6 +20,7 @@
 #include <malloc.h>
 #include "types.h"
 #include "bdecode.h"
+#define DEBUG 1
 
 item_t* get_record(item_t* root,const unsigned char* name){
     int d;
@@ -48,13 +49,15 @@ void print_file_data(char* first_dir_name,item_t* f){
     }
     if (path){
         if(first_dir_name)
-            printf("%s",first_dir_name);
+            printf("%s/",first_dir_name);
         for(c=0;c<path->list->count;c++){
             if(c)
                 printf("/");
             printf("%s",path->list->array[c].str);
         }
         printf("\n");
+    }else{
+        printf("no path??\n");
     }
 
 }
@@ -77,6 +80,9 @@ int process_filelist(item_t* root, int display_flags){
     }else{ 
         name_item=get_record(info,"name");
         first_dir_name=name_item->str;
+        #ifdef DEBUG 
+            printf("name:%s\n",first_dir_name);
+        #endif
         for(c=0;c<filelist->list->count;c++){
             if(1){/*display_flags will be here*/
                 print_file_data(first_dir_name,filelist->list->array+c);
