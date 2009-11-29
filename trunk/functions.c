@@ -84,9 +84,6 @@ int process_filelist(item_t* root, int display_flags){
     }else{ 
         name_item=get_record(info,"name");
         first_dir_name=name_item->str;
-        #ifdef DEBUG 
-            printf("name:%s\n",first_dir_name);
-        #endif
         l=filelist->list->next; /*skip first entry (used for technical needs of list)*/
         while(l){
             if(1){/*display_flags will be here*/

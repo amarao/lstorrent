@@ -13,12 +13,12 @@ struct list_s;
 
 typedef struct{
     enum type_e type;
-//    union{
+    union{
         long long num;
         unsigned char* str;
         struct dict_s* dict; 
         struct list_s* list;
-//    };
+    };
 }item_t;
 
 typedef struct dict_s{
@@ -29,10 +29,10 @@ typedef struct dict_s{
 
 
 typedef struct list_s{
-//    union{
+    union{
         item_t* value;
         struct list_s* last; /*last filled only for first element of list, so, actual value will be stored starts from second element*/
-//    };
+    };
     struct list_s* next;
 
 }list_t;
