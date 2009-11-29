@@ -27,7 +27,7 @@ item_t* get_record(item_t* root,const unsigned char* name){
     dict_t* d;
     if (!root)
         return NULL;
-    if (root->type!=dict)
+    if (root->type!=dict_et)
         return NULL;
     d=root->dict;
     while(d){

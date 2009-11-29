@@ -20,7 +20,7 @@
 
 int main(int argc, char* argv[]){
 #define MAX_FILE_SIZE 15*1024*1024
-/*I think, this is resonally big for *.torrent file. If you wish, you can try to use bigger values, but note, that parsing of files requied about 3 times of buffer size memory*/
+/*I think, this is resonally big for *.torrent file. If you wish, you can try to use bigger values, but note, that parsing of files requied about 9 times of buffer size memory*/
 
     unsigned char* buf;
     off_t size=0;
@@ -44,7 +44,7 @@ int main(int argc, char* argv[]){
             continue;
         }
         if(fsize<0||fsize>MAX_FILE_SIZE){
-            printf(err_torrent_too_big,argv[0],(intmax_t)fsize);
+            printf(err_torrent_too_big,argv[c],(intmax_t)fsize);
             continue;
         }
         buf=malloc(fsize+1);
@@ -58,13 +58,18 @@ int main(int argc, char* argv[]){
             continue;
         }
         size=fread(buf,1,fsize,f);
-        if (size!=fsize)
+        if (size!=fsize){
             printf(err_noread,argv[c],strerror(errno));
+            continue;
+        }
         fclose(f);
-        buf[fsize]=0;
+ //       buf[fsize]=0;
         res=bdecode(buf,size);   
-        free(buf);
+//        free(buf);
         debug(res);
+        del(res);
+//        res=bdecode(buf,size);   
+//       debug(res); 
         /*process here*/
     }
     return 0;

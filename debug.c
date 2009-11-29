@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "types.h"
 #include "ui.h"
 #include "bdecode.h"
@@ -15,13 +16,16 @@ void print_item(item_t* item,int tabs){
         return;
     }
     switch(item->type){
-        case num:
+        case num_et:
             printf("num(%lli)",item->num);
             break;
-        case str:
-            printf("str(%s)",item->str);
+        case str_et:
+            if(strlen(item->str)<80){
+                printf("str(%s)",item->str);
+            }else
+                printf("str[%d]",strlen(item->str));
             break;
-        case dict:
+        case dict_et:
             d=item->dict;
             printf("dict(\n");
             while(d){
@@ -41,7 +45,7 @@ void print_item(item_t* item,int tabs){
                 printf("    ");
             printf(" ) //dict end\n");
             break;
-        case list:
+        case list_et:
             l=item->list->next;
             printf("list(\n");
             while(l){
@@ -63,7 +67,8 @@ void print_item(item_t* item,int tabs){
 
 void debug(item_t* res){
     item_t* search;
-//    print_item(res,0);
+//   print_item(res,0);
 //    printf("-------------------------------------------\n");
     process_filelist(res,1); 
+//    printf("============================================\n");
 }
