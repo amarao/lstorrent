@@ -30,53 +30,56 @@
 #define CUR (buf[*index])
 #define MAX_STRING 15*1024*1024
 
-item_t* decode(unsigned char *buf, int *index, size_t size); /*for internal use only*/
+static char last=0;
+void* decode(unsigned char *buf, int *index, int *type, size_t size); /*for internal use only*/
 
-long long decode_num(unsigned char *buf, int *index, size_t size){
-    long long retval=0;
+void* decode_num(unsigned char *buf, int *index, size_t size){
+/*
+    We found a number in ASCII format and convert it to C-like string (adding a '\0' to end).
+    string format (input: i99...999e; output: i99...999\0, we return pointer to first char after 'i')
+*/
+    void* data=buf+*index+1;
     if( !buf || !index)
         oops(err_internal);        
     if (size<3)
         oops(err_bad);
-    if (CUR!='i')
-        oops(err_internal);
     NEXT;
+    last=0;
     while(CUR!='e'){ 
         if (!isdigit(CUR))
             oops(err_bad);
-        retval*=10;
-        retval+=(int)CUR-(int)'0';
         NEXT;
     }
+    CUR==0; /*we replace 'e' at the end by \0 to make number type be a char* */
+    last=0; /*we does not make any changes to 'future', so we not keep last char*/
     NEXT;
-    return retval;
+    return data;
 }
 
-item_t* decode_num_t(unsigned char *buf, int *index, size_t size){
-    item_t* retval=new_item(num_et);
-    retval->num=decode_num(buf,index,size);
-    return retval;
-}
+void* decode_string(unsigned char* buf, int *index, size_t size){
+/*
+    We do a really DIRTY HACK here: we found a string and convert it to C-like (adding a '\0' to end.
+    But we has no space for extra char at string end, so we copy 'next' char to global variable 'last' and REPLACE it with zero.
+    It's really dirty, but allow us to skip a lots of memcpy() and reduce requied memory
 
-unsigned char* decode_string(unsigned char *buf, int *index, size_t size){
-    unsigned char* retval=NULL;
+    And note, we does not needs an reserve byte at file end, because any torrent file is a dict, 
+    so it HAVE at least one 'e' char at end (witch one we replace with \0).
+*/
+
     size_t str_len=0;
-    if( !buf || !index)
-        oops(err_internal);        
+    void* retval;
     if (size<2)
         oops(err_bad);
-    if (! isdigit(CUR))
-        oops(err_internal);
+    if (last)
+         str_len=last-'0';
+    else
+        str_len=CUR-'0';
+    last=0;
+    NEXT;
     while(isdigit(CUR)){
         str_len*=10;
         str_len+=(int)CUR-(int)'0';
         NEXT;
-    }
-    if( CUR==':' ){
-        NEXT;
-    }
-    else{
-        oops(err_bad);
     }
     if (str_len<0 || str_len>MAX_STRING){
         printf("%d\n",str_len);
@@ -84,101 +87,111 @@ unsigned char* decode_string(unsigned char *buf, int *index, size_t size){
     }
     if (str_len+(*index)>size)
         oops(err_uncomplete);
-    retval=malloc(str_len+1);
-    if (!retval)
-        oops(err_nomem);
-    if (str_len>0){
-        memcpy(retval,buf+(*index),str_len);
-        (*index)+=str_len;
+    if( CUR==':' ){
+        NEXT;
+    }else{
+        oops(err_bad);
     }
-    retval[str_len]=0;
+    retval=buf+(*index);
+    (*index)+=str_len;
+    last=CUR; /*keep changed char in global variable*/
+    CUR=0;/*change it to '\0' to convert P-string to C-string*/
     return retval;
 }
-
-
-item_t* decode_str_t(unsigned char *buf, int *index, size_t size){
-    item_t* retval=new_item(str_et);
-    retval->str=decode_string(buf,index,size);
-    return retval;
-}
-
-
-
 
 dict_t* decode_dict(unsigned char *buf, int *index, size_t size){
     dict_t *retval=NULL;
     char  *key;
-    item_t  *value;
+    void  *value;
+    int type;
+    int cmp;
     if( !buf || !index)
         oops(err_internal);        
     if (size<2)
         oops(err_bad);
-    #ifdef DEBUG
-        if (CUR!='d')
-            oops(err_internal);
-    #endif
     NEXT;
-    while(CUR!='e'){
+    last=0;
+/*  here we got result of dirty hack in decode_string: 
+    last MUST contain here or sero (and then CUR='d') or last='d' (and then CUR='\0'). 
+    In any case this does not matter - skip
+*/
+    do{
         key=decode_string(buf,index,size);
-        value=decode(buf,index,size);
-        add_to_dict(&retval,key,value);
-
-    }
+        value=decode(buf,index,&type,size);
+        add_to_dict(&retval,key,type,value);
+        if (last)/*we handle here a dirty hack*/
+            cmp=last;
+        else
+            cmp=CUR;
+        last=0;
+    }while(cmp!='e');
     NEXT;
     return retval;
 }
 
-item_t* decode_dict_t(unsigned char *buf, int *index, size_t size){
-    item_t* retval=new_item(dict_et);
-    retval->dict=decode_dict(buf,index,size);
-    return retval;
-}
 
 list_t* decode_list(unsigned char *buf, int *index, size_t size){
     list_t* retval=new_list();
-    item_t* value;
+    void* value;
+    int type;
+    char cmp=0;
     if( !buf || !index)
         oops(err_internal);        
     if (size<2)
         oops(err_bad);
-    if (CUR!='l')
-        oops(err_internal);
     NEXT;
-    while(CUR!='e'){
-        value=decode(buf,index,size);
-        add_to_list(retval,value);
-    }
+    last=0;
+/*  here we got result of dirty hack in decode_string: 
+     last MUST contain here or sero (and then CUR='l') or last='l' (and then CUR='\0'). 
+    In any case this does not matter - skip
+*/
+    do{
+        value=decode(buf,index,&type,size);
+        add_to_list(retval,type,value);
+        if (last)/*we handle here a dirty hack*/
+            cmp=last;
+        else
+            cmp=CUR;
+        last=0;
+    }while(cmp!='e');
     NEXT;
     return retval;
 }
 
 
-item_t* decode_list_t(unsigned char *buf, int *index, size_t size){
-    item_t* retval=new_item(list_et);
-    retval->list=decode_list(buf,index,size);
-    return retval;
-}
 
-item_t* decode(unsigned char *buf, int *index, size_t size){
+void* decode(unsigned char *buf, int *index, int *type, size_t size){
 /*decode anything with autodetection. For dicts/lists become recursive*/
-    item_t *retval=NULL;
+    void *retval=NULL;
+    char cmp;
     if( !buf || !index)
         oops(err_internal);        
     if (!size || *index+1>=size)
         oops(err_bad);
-    switch (CUR){
+
+/*  here we got result of dirty hack of decode_string (or not got!) 
+    or current char keeps in 'last', or (if last is zero), current char in untoched*/
+    if(last)
+        cmp=last;
+    else
+        cmp=CUR;
+    switch (cmp){
         case 'i':
-            retval=decode_num_t(buf,index,size);
+            retval=decode_num(buf,index,size);
+            *type=str_et; /*yes, we decode numbers as strings, if someone decide to process it - atoi() will help*/
             break;
         case 'd':
-            retval=decode_dict_t(buf,index,size);
+            retval=decode_dict(buf,index,size);
+            *type=dict_et;
             break;
         case 'l':
-            retval=decode_list_t(buf,index,size);
+            retval=decode_list(buf,index,size);
+            *type=list_et;
             break;
         default:
-            if(isdigit(CUR)){
-                retval=decode_str_t(buf,index,size);
+            if(isdigit(cmp)){ /*note - not isdigit(CUR), but isdigit (cmp) - see note above about dirty hack*/
+                retval=decode_string(buf,index,size);
+                *type=str_et;
                 break;
             }
             else{
@@ -189,8 +202,8 @@ item_t* decode(unsigned char *buf, int *index, size_t size){
 
 }
 
-item_t* bdecode(unsigned char*buf, size_t size){
+dict_t* bdecode(unsigned char*buf, size_t size){
 /*decorator for export*/
     int pos=0;
-    return decode(buf,&pos,size);
+    return decode_dict(buf, &pos, size);
 }

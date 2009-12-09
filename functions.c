@@ -18,22 +18,18 @@
  ****************************************************************************/
 #include <string.h>
 #include <malloc.h>
+#include <assert.h>
 #include "types.h"
 #include "bdecode.h"
 #include "functions.h"
 #define DEBUG 1
 
-item_t* get_record(item_t* root,const unsigned char* name){
-/*records from dict*/
-    dict_t* d;
-    if (!root)
-        return NULL;
-    if (root->type!=dict_et)
-        return NULL;
-    d=root->dict;
+void* get_record( dict_t* root, const unsigned char* name){
+    dict_t* d=root;
     while(d){
-        if(!strcmp(name,d->key))
-            return d->value;
+        if(!strcmp(name,d->key)){ /*here little risk, that name is bigger than avaible chars in buf - we fix it by inresizeing buff  */
+            return d->data;
+        }
         d=d->next;    
     }
     return NULL;
@@ -41,8 +37,8 @@ item_t* get_record(item_t* root,const unsigned char* name){
 
 
 
-void print_file_data(char* first_dir_name,item_t* f,int mode ){
-//    item_t* length=get_record(f,"length"); /*right now has no meaning*/
+/*void print_file_data(char* first_dir_name,item_t* f,int mode ){
+//    item_t* length=get_record(f,"length");
     item_t* path=get_record(f,"path");
     list_t* l;
 //    if(!(mode& MODE_DISPLAY_DIRS) && !(mode&MODE_DISPLAY_FILES))
@@ -78,34 +74,48 @@ void print_file_data(char* first_dir_name,item_t* f,int mode ){
 
     }
 }
+*/
 
-int process_filelist(item_t* root, int display_flags){
-    item_t* info=get_record(root,"info");
-    item_t* filelist=get_record(info,"files");
-    item_t* name;
-    item_t* name_item;
+int process_filelist(dict_t* root, int display_flags){
+    return 0;
+}
+//UNDER DEBUG!
+/*    dict_t* info=get_record(root,"info");
+    list_t* filelist=get_record(info,"files");
+    void* name;
+    void* name_item;
     char* first_dir_name;
     list_t* l;
-    if (!info)
+    int lc;
+    int pc;
+    list_t* path;
+
+    if (!info){
+        printf("none\n");
         return 0;
-    /*we have to cases: 'info' contains an files record for mutlifile torrent or contain data about file for single-file torrent*/
+    }
+    //we have to cases: 'info' contains an files record for mutlifile torrent or contain data about file for single-file torrent
     if(!filelist){
-    /*first case - single-file torrent without directories, we just print name*/
-        if(display_flags&MODE_DISPLAY_FILES){
-            name=get_record(info,"name");
-            printf("%s\n",name->str);
+    //first case - single-file torrent without directories, we just print name
+        if(1){
+            name=get_record(info,str_et,"name");
+            //process string here
+            printf("%s\n",real_decode_string(name));
         }
-    /*second case - mulitfile torrent*/
+    //second case - mulitfile torrent
     }else{ 
-        name_item=get_record(info,"name");
-        first_dir_name=name_item->str;
-        l=filelist->list->next; /*skip first entry (used for technical needs of list)*/
-        while(l){
-            print_file_data(first_dir_name,l->value,display_flags);
-            l=l->next;
+        first_dir_name=real_decode_string((unsigned char*)get_record(info,str_et,"name"));
+        for(lc=0;lc<filelist->used;lc++){
+            path=get_record(filelist->values[lc].dict,list_et,"path");
+//            print_file_data(first_dir_name,l->value,display_flags);
+            printf("%s",first_dir_name);
+            for(pc=0;pc<path->used;pc++){
+                printf("/%s",real_decode_string(path->values[pc].data));
+            }
+            printf("\n");
         }
     }
 }
 
 
-
+*/
