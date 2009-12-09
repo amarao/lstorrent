@@ -26,7 +26,7 @@ int main(int argc, char* argv[]){
     off_t size=0;
     off_t fsize=0;
     FILE* f;
-    item_t * res;
+    dict_t *res;
     struct stat st;    
     int c;
     int display_mode=7;
@@ -48,7 +48,7 @@ int main(int argc, char* argv[]){
             printf(err_torrent_too_big,argv[c],(intmax_t)fsize);
             continue;
         }
-        buf=malloc(fsize+1);
+        buf=malloc(fsize+SAFE_PAD);
         if(!buf){
             printf(err_nomem);
             continue;
@@ -67,8 +67,9 @@ int main(int argc, char* argv[]){
         buf[fsize]=0;
         res=bdecode(buf,size);   
         free(buf);
+        printf("---\n");
         process_filelist(res, display_mode);
-        del(res);
+//        del_dict(res);
     }
 
     return 0;

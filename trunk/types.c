@@ -24,52 +24,48 @@
 #include "ui.h"
 #include "types.h"
 
-list_t* new_list();
+#define DEBUG 1
 
-item_t* new_item(enum type_e type){
-    item_t* retval=calloc(1,sizeof(item_t));
-    if(!retval)
-        oops(err_nomem);
-    retval->type=type;
-    return retval;    
-}
-
-void add_to_dict(dict_t** dict, char *new_key, item_t *new_value){
+void add_to_dict(dict_t** dict, char *new_key, enum type_e type,void* data){
     /*skip duplicate key check, we are not python...*/
     dict_t* newdict=malloc(sizeof(dict_t));
     if(!newdict){
         oops(err_nomem);
     }
     newdict->key=new_key;
-    newdict->value=new_value;
+    newdict->data=data;/*same for str/dict/list pointers*/
+    newdict->type=type;
     newdict->next=*dict;
     /*dicts has no order, so we use this - reversing order (FILO)*/
     *dict=newdict;
 }
 
-list_t* new_list(){
-    list_t* newlist=calloc(1,sizeof(list_t));
-    if(!newlist)
-        oops(err_nomem);
-    return newlist;
-}
 
-void add_to_list(list_t* list, item_t* item){
+list_t* new_list(){
+    #define DEFAULT_LIST_SIZE 2
     list_t* newlist=malloc(sizeof(list_t));
     if(!newlist)
         oops(err_nomem);
-    if(!list)
-        oops("shit");
-    newlist->next=NULL;
-    newlist->last=NULL;
-    if(list->last){
-        list->last->next=newlist;
-    }else{/*adding fist real element to empty list*/
-        list->next=newlist;
-    }
-    list->last=newlist;
-    newlist->value=item;
+    newlist->values=malloc(sizeof(item_t)*DEFAULT_LIST_SIZE);
+    newlist->allocated=DEFAULT_LIST_SIZE;
+    newlist->used=0;
+    return newlist;
 }
+
+void add_to_list(list_t* list, enum type_e type, void* data){
+    item_t* temp;    
+    if(list->used==list->allocated){
+        list->allocated=list->allocated+list->allocated/2;/* ==*1.5 */
+        temp=realloc(list->values,sizeof(item_t)*(list->allocated));
+        if(!temp)
+            oops(err_nomem);
+        list->values=temp;
+    }
+    list->values[list->used].type=type;
+    list->values[list->used].data=data;
+    list->used++;
+}
+
 
 void del_dict(dict_t* dict){
     dict_t* d=dict;
@@ -77,49 +73,36 @@ void del_dict(dict_t* dict){
     while(d){
         temp=d->next;
         free(d->key);
-        del(d->value);
+        switch(d->type){
+            case dict_et:
+                del_dict(d->dict);
+                break;
+            case list_et:
+                del_list(d->list);
+                break;
+            /*we do not free() a strings - they are pointer to original buffer, not allocated memory*/
+        }
         free(d);
         d=temp;        
-
     }
 }
 
 void del_list(list_t* list){
-    list_t* l=list->next; /*note, that 1st element contains no data*/
-    list_t* temp;
-    while(l){
-        temp=l->next;
-        if(!l->value) oops("!");
-        del(l->value);
-        l->value=NULL;
-        free(l);
-        l=temp;
+
+    int c;
+    for(c=0;c<list->used;c++){
+        switch(list->values[c].type){
+            case dict_et:
+                del_dict(list->values[c].dict);
+                break;
+            case list_et:
+                del_list(list->values[c].list);
+                break;
+            /*we do not free() a strings - they are pointer to original buffer, not allocated memory*/
+        }
     }
-    free(list);    
+    free(list->values);    
+    free(list);
 }
 
-void del(item_t* i){
-    switch(i->type){
-        case num_et:
-            break;
-        case str_et:
-            if(!i->str) oops("!");
-           free(i->str);
-            i->str=NULL;
-            break;
-        case dict_et:
-            if(!i->dict) oops("!");
-            del_dict(i->dict);
-            i->dict=NULL;
-            break;
-        case list_et:
-            if(!i->list) oops("!");
-            del_list(i->list);
-            i->list=NULL;
-            break;
-        default:
-            printf("some shit in del");
-    }    
-    free(i);
-}
 

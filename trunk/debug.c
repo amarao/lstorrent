@@ -5,70 +5,88 @@
 #include "ui.h"
 #include "bdecode.h"
 #include "functions.h"
+#include "debug.h"
 
-void print_item(item_t* item,int tabs){
-/* mostly for debug */
+void print_dict(dict_t* dict,int tabs){
     int c;
     dict_t* d;
-    list_t* l;
-    if (!item){
+    if (!dict){
         printf("Item is NULL!\n");
         return;
     }
-    switch(item->type){
-        case num_et:
-            printf("num(%lli)",item->num);
-            break;
-        case str_et:
-            if(strlen(item->str)<80){
-                printf("str(%s)",item->str);
-            }else
-                printf("str[%d]",strlen(item->str));
-            break;
-        case dict_et:
-            d=item->dict;
-            printf("dict(\n");
-            while(d){
-                for (c=0;c<tabs+1;c++)
-                    printf("    ");
-                printf("key =");
-                printf("%d",d->key); /*fix ,tabs+2*/
-                printf("\n");
-                for (c=0;c<tabs+1;c++)
-                    printf("    ");
-                printf("value=");
-                print_item(d->value,tabs+2);
-                printf("\n");
-                d=d->next;
-            }
-            for (c=0;c<tabs;c++)
-                printf("    ");
-            printf(" ) //dict end\n");
-            break;
-        case list_et:
-            l=item->list->next;
-            printf("list(\n");
-            while(l){
-                for (c=0;c<tabs;c++)
-                    printf("    ");
-                printf("(value)=");
-                print_item(l->value,tabs+1);
-                printf("\n");
-                l=l->next;
-            }
-            printf("\n");
-            for (c=0;c<tabs;c++)
-                printf("    ");
-            printf(" ) //list end\n");
-            break;
+
+    d=dict;
+    while(d){
+        for (c=0;c<tabs+1;c++)
+            printf("    ");
+        printf("key = %d\n",d->key);
+        for (c=0;c<tabs+1;c++)
+            printf("    ");
+        printf("value=");
+        switch(d->type){
+            case num_et://impossible
+                printf("YOU ARE SHOCK!!! (got a num_et here)");
+                break;
+            case str_et:
+                if(strlen(dict->str)<60)
+                    printf("str(%s)",dict->str);
+                else
+                    printf("str[%d]",strlen(dict->str));
+                break;
+            case dict_et:
+                printf("dict(\n");
+                print_dict(d->dict,tabs+2);
+                printf(") //dict end\n");
+                break;
+            case list_et:
+                printf("list(\n");
+                print_list(d->list,tabs+2);
+                printf(") //list end\n");
+                break;
+        }
     }
 }
 
+void print_list(list_t* list,int tabs){
+    int c;
+    int lc;
+    if (!list ){
+        printf("Item is NULL!\n");
+        return;
+    }
+    for(lc=0;lc<list->used;lc++){
+        for (c=0;c<tabs+1;c++)
+            printf("    ");
+        printf("value=");
+        switch(list->values[lc].type){
+            case num_et://impossible
+                printf("YOU ARE SHOCK!!! (got a num_et here)");
+                break;
+            case str_et:
+                if(strlen(list->values[lc].str)<60)
+                    printf("str(%s)",list->values[lc].str);
+                else
+                    printf("str[%d]",strlen(list->values[lc].str));
+                break;
+            case dict_et:
+                printf("dict(\n");
+                print_dict(list->values[lc].dict,tabs+2);
+                printf(") //dict end\n");
+                break;
+            case list_et:
+                printf("list(\n");
+                print_list(list->values[lc].list,tabs+2);
+                printf(") //list end\n");
+                break;
+        }
+        printf("\n");
+    }
 
-void debug(item_t* res){
-    item_t* search;
-//   print_item(res,0);
+}
+
+void debug(dict_t* res){
+   print_dict(res,0);
 //    printf("-------------------------------------------\n");
-    process_filelist(res,1); 
+ //   process_filelist(res,1); 
 //    printf("============================================\n");
 }

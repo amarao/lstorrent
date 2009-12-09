@@ -1,5 +1,4 @@
-item_t* get_record(item_t* root,const unsigned char* name);
-
+void* get_record( dict_t* root, const unsigned char* name);
 typedef enum {
     skip,
     filename_only,
