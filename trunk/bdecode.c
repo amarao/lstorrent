@@ -70,11 +70,13 @@ void* decode_string(unsigned char* buf, int *index, size_t size){
     void* retval;
     if (size<2)
         oops(err_bad);
+//    printf("last:%d(%c), cur %d(%c)\n",last,last,CUR,CUR);
     if (last)
          str_len=last-'0';
     else
         str_len=CUR-'0';
     last=0;
+//  printf("str_len=%d\n",str_len);
     NEXT;
     while(isdigit(CUR)){
         str_len*=10;
@@ -123,7 +125,7 @@ dict_t* decode_dict(unsigned char *buf, int *index, size_t size){
             cmp=last;
         else
             cmp=CUR;
-        last=0;
+//        last=0;
     }while(cmp!='e');
     NEXT;
     return retval;
