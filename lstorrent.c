@@ -68,7 +68,8 @@ int main(int argc, char* argv[]){
         res=bdecode(buf,size);   
         free(buf);
         printf("---\n");
-        process_filelist(res, display_mode);
+//        process_filelist(res, display_mode);
+	debug(res);
 //        del_dict(res);
     }
 
