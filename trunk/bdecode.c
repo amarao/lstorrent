@@ -50,9 +50,10 @@ void* decode_num(unsigned char *buf, int *index, size_t size){
             oops(err_bad);
         NEXT;
     }
-    CUR==0; /*we replace 'e' at the end by \0 to make number type be a char* */
+    CUR=0; /*we replace 'e' at the end by \0 to make number type be a char* */
     last=0; /*we does not make any changes to 'future', so we not keep last char*/
     NEXT;
+	printf("decode_num=%s\n",data);
     return data;
 }
 
@@ -98,6 +99,7 @@ void* decode_string(unsigned char* buf, int *index, size_t size){
     (*index)+=str_len;
     last=CUR; /*keep changed char in global variable*/
     CUR=0;/*change it to '\0' to convert P-string to C-string*/
+printf("decode_string=%s\n",retval);
     return retval;
 }
 
@@ -119,7 +121,9 @@ dict_t* decode_dict(unsigned char *buf, int *index, size_t size){
 */
     do{
         key=decode_string(buf,index,size);
+	printf("decode_key=%s\n",key);
         value=decode(buf,index,&type,size);
+	printf("decode_value=%s\n",value);
         add_to_dict(&retval,key,type,value);
         if (last)/*we handle here a dirty hack*/
             cmp=last;
@@ -128,6 +132,7 @@ dict_t* decode_dict(unsigned char *buf, int *index, size_t size){
 //        last=0;
     }while(cmp!='e');
     NEXT;
+	last=0;
     return retval;
 }
 
@@ -154,9 +159,9 @@ list_t* decode_list(unsigned char *buf, int *index, size_t size){
             cmp=last;
         else
             cmp=CUR;
-        last=0;
     }while(cmp!='e');
     NEXT;
+	last=0;
     return retval;
 }
 
@@ -200,6 +205,7 @@ void* decode(unsigned char *buf, int *index, int *type, size_t size){
                 oops(err_bad);
             }
     }
+//	printf("debug: decode=(%d)%s\n",*type,retval);
     return retval;   
 
 }

@@ -7,8 +7,14 @@
 #include "functions.h"
 #include "debug.h"
 
-void print_dict(dict_t* dict,int tabs){
+space(int tabs){
     int c;
+    for (c=0;c<tabs+1;c++)
+        printf("    ");
+
+}
+
+void print_dict(dict_t* dict,int tabs){
     dict_t* d;
     if (!dict){
         printf("Item is NULL!\n");
@@ -17,12 +23,10 @@ void print_dict(dict_t* dict,int tabs){
 
     d=dict;
     while(d){
-        for (c=0;c<tabs+1;c++)
-            printf("    ");
-        printf("key = %d\n",d->key);
-        for (c=0;c<tabs+1;c++)
-            printf("    ");
-        printf("value=");
+	space(tabs);
+        printf("dict_key = %d\n",d->key);
+	space(tabs);
+        printf("dict_value=");
         switch(d->type){
             case num_et://impossible
                 printf("YOU ARE SHOCK!!! (got a num_et here)");
@@ -36,14 +40,18 @@ void print_dict(dict_t* dict,int tabs){
             case dict_et:
                 printf("dict(\n");
                 print_dict(d->dict,tabs+2);
+		space(tabs);
                 printf(") //dict end\n");
                 break;
             case list_et:
                 printf("list(\n");
                 print_list(d->list,tabs+2);
+		space(tabs);
                 printf(") //list end\n");
                 break;
         }
+	printf("\n");
+	d=d->next;
     }
 }
 
@@ -55,9 +63,8 @@ void print_list(list_t* list,int tabs){
         return;
     }
     for(lc=0;lc<list->used;lc++){
-        for (c=0;c<tabs+1;c++)
-            printf("    ");
-        printf("value=");
+	space(tabs);
+        printf("list_item=");
         switch(list->values[lc].type){
             case num_et://impossible
                 printf("YOU ARE SHOCK!!! (got a num_et here)");
@@ -71,11 +78,13 @@ void print_list(list_t* list,int tabs){
             case dict_et:
                 printf("dict(\n");
                 print_dict(list->values[lc].dict,tabs+2);
+		space(tabs);
                 printf(") //dict end\n");
                 break;
             case list_et:
                 printf("list(\n");
                 print_list(list->values[lc].list,tabs+2);
+		space(tabs);
                 printf(") //list end\n");
                 break;
         }
