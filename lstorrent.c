@@ -11,22 +11,22 @@
 #include "debug.h"
 #include "errno.h"
 
-//#define CUR (buf[*index]+0*printf("CUR = position: 0x%x, char: '%c'\n",*index,buf[*index]))
-
-
-
-#define DEBUG 1
 
 
 int main(int argc, char* argv[]){
-#define MAX_FILE_SIZE 40*1024*1024
-/*I think, this is resonally big for *.torrent file. If you wish, you can try to use bigger values, but note, that parsing of files requied about 9 times of buffer size memory*/
+#define MAX_FILE_SIZE 64*1024*1024
+/*
+      I think, this is resonally big for *.torrent file. If you wish, you can 
+      try to use bigger values, but note, that parsing of files requied about 6 times 
+      of buffer size memory
+*/
 
     unsigned char* buf;
-    off_t size=0;
-    off_t fsize=0;
+    size_t size=0;
+    size_t fsize=0;
+    size_t old_size=0;
     FILE* f;
-    dict_t *res;
+    dict_t *torrent;
     struct stat st;    
     int c;
     int display_mode=7;
@@ -44,15 +44,20 @@ int main(int argc, char* argv[]){
             printf(err_empty,argv[c]);
             continue;
         }
-        if(fsize<0||fsize>MAX_FILE_SIZE){
+        if(fsize<=0||fsize>MAX_FILE_SIZE){
             printf(err_torrent_too_big,argv[c],(intmax_t)fsize);
             continue;
         }
-        buf=malloc(fsize+SAFE_PAD);
-        if(!buf){
-            printf(err_nomem);
-            continue;
-        }
+        if(fsize>old_size){ //fist file: fsize is not zero, old_size==0
+            if(old_size){
+                free(buf);
+            }
+            buf=malloc(fsize+SAFE_PAD);
+            if(!buf){
+                printf(err_nomem);
+                continue;
+            }
+        }//if we already have a large buffer, we can reuse it again
         f=fopen(argv[c],"rb");
         if(!f){
             printf("%s\n",strerror(errno));
@@ -65,11 +70,11 @@ int main(int argc, char* argv[]){
         }
         fclose(f);
         buf[fsize]=0;
-        res=bdecode(buf,size);   
-//    	debug(res);
+        torrent=bdecode(buf,size);   
+//    	debug(torrent);
 //        printf("---\n");
-        process_filelist(res, display_mode);
-        del_dict(res);
+        process_filelist(torrent, display_mode);
+        del_dict(torrent);
     }
 
     return 0;
