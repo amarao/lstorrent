@@ -82,7 +82,6 @@ void del_dict(dict_t* dict){
     dict_t* temp;
     while(d){
         temp=d->next;
-        free(d->key);
         switch(d->type){
             case dict_et:
                 del_dict(d->dict);

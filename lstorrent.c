@@ -69,7 +69,7 @@ int main(int argc, char* argv[]){
 //    	debug(res);
 //        printf("---\n");
         process_filelist(res, display_mode);
-//        del_dict(res);
+        del_dict(res);
     }
 
     return 0;
