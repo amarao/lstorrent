@@ -14,6 +14,13 @@ space(int tabs){
 
 }
 
+safe(char* a){
+    while(*a){
+        if(*a<32) *a='.';
+        a++;
+    }
+}
+
 void print_dict(dict_t* dict,int tabs){
     dict_t* d;
     if (!dict){
@@ -23,19 +30,22 @@ void print_dict(dict_t* dict,int tabs){
 
     d=dict;
     while(d){
-	space(tabs);
-        printf("dict_key = %d\n",d->key);
-	space(tabs);
+    	space(tabs);
+        safe(d->key);
+        printf("dict_key = %s\n",d->key);
+    	space(tabs);
         printf("dict_value=");
         switch(d->type){
             case num_et://impossible
                 printf("YOU ARE SHOCK!!! (got a num_et here)");
                 break;
             case str_et:
-                if(strlen(dict->str)<60)
-                    printf("str(%s)",dict->str);
+                if(strlen(d->str)<60){
+                    safe(d->str);
+                    printf("str(%s)",d->str);
+                }
                 else
-                    printf("str[%d]",strlen(dict->str));
+                    printf("str[%d]",strlen(d->str));
                 break;
             case dict_et:
                 printf("dict(\n");
@@ -70,8 +80,10 @@ void print_list(list_t* list,int tabs){
                 printf("YOU ARE SHOCK!!! (got a num_et here)");
                 break;
             case str_et:
-                if(strlen(list->values[lc].str)<60)
+                if(strlen(list->values[lc].str)<60){
+                    safe(list->values[lc].str);
                     printf("str(%s)",list->values[lc].str);
+                }
                 else
                     printf("str[%d]",strlen(list->values[lc].str));
                 break;

@@ -38,6 +38,11 @@ void add_to_dict(dict_t** dict, char *new_key, enum type_e type,void* data){
     newdict->next=*dict;
     /*dicts has no order, so we use this - reversing order (FILO)*/
     *dict=newdict;
+//    printf("add new key:%s\n",(*dict)->key);
+//    if(type==str_et)
+//        printf("add new value: %s\n",(*dict)->data);
+//    else
+//        printf("add new value (not str)\n");
 }
 
 
@@ -63,6 +68,11 @@ void add_to_list(list_t* list, enum type_e type, void* data){
     }
     list->values[list->used].type=type;
     list->values[list->used].data=data;
+//    printf("add a new list entry:");
+//    if(type==str_et)
+//        printf("%s\n",list->values[list->used].data);
+//    else
+//        printf("(not str)\n");
     list->used++;
 }
 
