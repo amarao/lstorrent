@@ -27,7 +27,7 @@
 void* get_record( dict_t* root, const unsigned char* name){
     dict_t* d=root;
     while(d){
-        if(!strcmp(name,d->key)){ /*here little risk, that name is bigger than avaible chars in buf - we fix it by inresizeing buff  */
+        if(!strcmp(name,d->key)){
             return d->data;
         }
         d=d->next;    
@@ -77,7 +77,49 @@ void* get_record( dict_t* root, const unsigned char* name){
 */
 
 int process_filelist(dict_t* root, int display_flags){
-    return 0;
+    /* 
+        we have two cases: single file and multiply files
+        this desided by 'length' record in 'info' dict in 'root' dict
+    */
+    dict_t* info=get_record(root,"info");
+    char* length=get_record(info, "length");
+    char* name=get_record(info,"name");
+    list_t* files;
+    list_t* path;
+    int fc;
+    int pc;
+    if (length){
+        /*first case: single file - it name keeps in 'name' record in same root dict*/
+        printf("%s\n",name);
+    }
+    else{
+        /*
+            second case: muliply files:
+            more complificated - we have an 'name' record with name of "main directory" (where all other files are kept) and
+            'files' record, with list of entries. Every entry is a dict of following structure and describe a single file:
+                length - length of file
+                path - list of strings, every string is part of filename, last piece is a  file_name_without_path
+
+            to get full path of file in torrent we must join 'name' (from root) and every peice in 'path' list.
+            
+        */
+        files=get_record(info,"files");
+        assert(files);
+        for(fc=0;fc<files->used;fc++){
+            path=get_record(files->values[fc].dict,"path");
+            assert(path);
+            printf("%s",name);
+            for(pc=0;pc<path->used;pc++){
+                if(*name)
+                    printf("/");
+                printf("%s",path->values[pc].str);
+            }
+            printf("\n");
+        }
+        
+    }
+
+
 }
 //UNDER DEBUG!
 /*    dict_t* info=get_record(root,"info");
