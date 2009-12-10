@@ -1,0 +1,40 @@
+
+
+NAME
+    lstorrent - list content of torrent files
+
+SYNOPSYS
+    lstorrent [OPTION] ... [FILE] ...
+
+DESCRIPTION
+    Displays files and/or directories in *.torrent files. By default they are displayed as relative paths, but this can be changed to other views (see OPTIONS).
+
+    Exit status: 0 no errors, 1 if one or more files are corrupted (not recognized)
+
+OPTIONS
+    
+    -d, --no-dirs 
+                    do not display directories (only files are listed, one per line)
+    -f, --no-files 
+                    do not display files (display only directories)
+    -l, --list      
+                    do not display paths, only print directories/files one per line
+                    note:  duplicate entries not filtering.
+    -t --test
+                    parse only (no output, exit status 0 if no problem, 1 if parsing errors)
+    -h, --help
+                    print help
+    -v, --version
+                    print version
+
+AUTHOR
+    Written by George Shuklin
+
+REPORTING BUGS
+    amarao@desunote.ru
+
+COPYRIGHT
+    Copyright (C) 2009 George Shuklin. License: GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+       This is free software: you are free to change and redistribute it.  There is NO WARRANTY, to the extent permitted by law.
+
+
