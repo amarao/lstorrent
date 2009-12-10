@@ -19,7 +19,9 @@ OPTIONS
                     do not display files (display only directories)
     -l, --list      
                     do not display paths, only print directories/files one per line
-                    note:  duplicate entries not filtering.
+                    note:  duplicate entries are not filtering.
+    -s, --size
+                    print files size (if no files, no size printed)
     -t --test
                     parse only (no output, exit status 0 if no problem, 1 if parsing errors)
     -h, --help
