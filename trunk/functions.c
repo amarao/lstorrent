@@ -25,6 +25,7 @@
 #define DEBUG 1
 
 void* get_record( dict_t* root, const unsigned char* name){
+//return value for 'name' in dictionary 'root' or NULL in nothing found of 'root' is NULL
     dict_t* d=root;
     while(d){
         if(!strcmp(name,d->key)){
@@ -35,48 +36,41 @@ void* get_record( dict_t* root, const unsigned char* name){
     return NULL;
 }
 
-
-
-/*void print_file_data(char* first_dir_name,item_t* f,int mode ){
-//    item_t* length=get_record(f,"length");
-    item_t* path=get_record(f,"path");
-    list_t* l;
-//    if(!(mode& MODE_DISPLAY_DIRS) && !(mode&MODE_DISPLAY_FILES))
-//        return;
-
-    if (path){
-
-        if(first_dir_name){
-            if(mode & MODE_DISPLAY_DIRS){
-                printf("%s",first_dir_name);
-                if(mode & MODE_DISPLAY_PATHS)
+void* print_file(char* root_dir, list_t* path, int mode,char finish){
+    /*
+        print file data
+        if MODE_DISPLAY_PATHS does not specified, does not print a root dir
+    */
+    int c;
+    if(!path->used)
+        return;
+    if(mode & MODE_DISPLAY_PATHS){
+        if(root_dir)
+            if(*root_dir){
+                printf("%s",root_dir);
+                if(mode & MODE_DISPLAY_FILES || path->used>1){
                     printf("/");
-                else
-                    printf ("\n");                
+                }
+            }
+        for(c=0;c<path->used-1;c++){
+            printf("%s",path->values[c].str);
+        }
+        printf("%s%c",path->values[path->used-1].str,finish);
+    }else{/*no paths - prints items per-line*/
+        if(mode & MODE_DISPLAY_DIRS){
+            for(c=0;c<path->used-1;c++){
+                printf("%s%c",path->values[c].str,finish);
             }
         }
-        
-        l=path->list->next;
-        while(l){
-            if(l->next && mode & MODE_DISPLAY_DIRS){
-                printf("%s",l->value->str);
-                if( mode & MODE_DISPLAY_PATHS)
-                    printf("/");
-                else
-                    printf("\n");
-            }
-            if(!l->next && mode & MODE_DISPLAY_FILES)
-                printf("%s",l->value->str);
-            if(!l->next && (mode & (MODE_DISPLAY_DIRS|MODE_DISPLAY_FILES)))
-                printf ("\n");
-            l=l->next;
-       }
-
+        if(mode & MODE_DISPLAY_FILES){
+                printf("%s%c",path->values[path->used-1].str,finish);
+        }
     }
+    
 }
-*/
 
-int process_filelist(dict_t* root, int display_flags){
+
+int process_filelist(dict_t* root, int display, char finish){
     /* 
         we have two cases: single file and multiply files
         this desided by 'length' record in 'info' dict in 'root' dict
@@ -90,7 +84,8 @@ int process_filelist(dict_t* root, int display_flags){
     int pc;
     if (length){
         /*first case: single file - it name keeps in 'name' record in same root dict*/
-        printf("%s\n",name);
+        if(display & MODE_DISPLAY_FILES)
+            printf("%s%c",name,finish);
     }
     else{
         /*
@@ -101,63 +96,25 @@ int process_filelist(dict_t* root, int display_flags){
                 path - list of strings, every string is part of filename, last piece is a  file_name_without_path
 
             to get full path of file in torrent we must join 'name' (from root) and every peice in 'path' list.
-            
         */
         files=get_record(info,"files");
         assert(files);
+
+
+        if (!(display & MODE_DISPLAY_PATHS) &&display  & MODE_DISPLAY_DIRS && name){ /*special case for item-per-line and main dir: it prints once*/
+                if(*name)
+                    printf("%s%c",name,finish);
+        }
+
         for(fc=0;fc<files->used;fc++){
             path=get_record(files->values[fc].dict,"path");
-            assert(path);
-            printf("%s",name);
-            for(pc=0;pc<path->used;pc++){
-                if(*name)
-                    printf("/");
-                printf("%s",path->values[pc].str);
-            }
-            printf("\n");
+            if(!path) /* TODO: in future here will be error reporting (path MUST be here)*/
+                continue;
+            print_file(name,path,display,finish);
         }
         
     }
 
 
 }
-//UNDER DEBUG!
-/*    dict_t* info=get_record(root,"info");
-    list_t* filelist=get_record(info,"files");
-    void* name;
-    void* name_item;
-    char* first_dir_name;
-    list_t* l;
-    int lc;
-    int pc;
-    list_t* path;
 
-    if (!info){
-        printf("none\n");
-        return 0;
-    }
-    //we have to cases: 'info' contains an files record for mutlifile torrent or contain data about file for single-file torrent
-    if(!filelist){
-    //first case - single-file torrent without directories, we just print name
-        if(1){
-            name=get_record(info,str_et,"name");
-            //process string here
-            printf("%s\n",real_decode_string(name));
-        }
-    //second case - mulitfile torrent
-    }else{ 
-        first_dir_name=real_decode_string((unsigned char*)get_record(info,str_et,"name"));
-        for(lc=0;lc<filelist->used;lc++){
-            path=get_record(filelist->values[lc].dict,list_et,"path");
-//            print_file_data(first_dir_name,l->value,display_flags);
-            printf("%s",first_dir_name);
-            for(pc=0;pc<path->used;pc++){
-                printf("/%s",real_decode_string(path->values[pc].data));
-            }
-            printf("\n");
-        }
-    }
-}
-
-
-*/
