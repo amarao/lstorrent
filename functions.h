@@ -1,15 +1,8 @@
 void* get_record( dict_t* root, const unsigned char* name);
-typedef enum {
-    skip,
-    filename_only,
-    filename_and_paths
-}options_t;
-
-
+void* print_file(char* root_dir, list_t* path, int mode,char finish);
+int process_filelist(dict_t* root, int display, char finish);
 #define MODE_DISPLAY_FILES 0x1
 #define MODE_DISPLAY_DIRS 0x2
 #define MODE_DISPLAY_PATHS 0x4
 
-typedef options_t (*pass_filter_callback_t(item_t* item));
-/*right now return 0/1 to filter files*/
 
