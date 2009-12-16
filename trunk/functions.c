@@ -41,6 +41,7 @@ void* print_file(char* root_dir, list_t* path, int mode,char finish){
         print file data
         if MODE_DISPLAY_PATHS does not specified, does not print a root dir
     */
+    static list_t* old_path=NULL; 
     int c;
     if(!path->used)
         return;
@@ -61,12 +62,20 @@ void* print_file(char* root_dir, list_t* path, int mode,char finish){
     }else{/*no paths - prints items per-line*/
         if(mode & MODE_DISPLAY_DIRS){
             for(c=0;c<path->used-1;c++){
+		if(old_path){
+			if (c<old_path->used-1){
+				if(!strcmp(old_path->values[c].str,path->values[c].str)){
+					continue;
+				}
+			}
+		}
                 printf("%s%c",path->values[c].str,finish);
             }
         }
         if(mode & MODE_DISPLAY_FILES){
                 printf("%s%c",path->values[path->used-1].str,finish);
         }
+	old_path=path;
     }
     
 }
