@@ -44,18 +44,20 @@ void* print_file(char* root_dir, list_t* path, int mode,char finish){
     int c;
     if(!path->used)
         return;
-    if(mode & MODE_DISPLAY_PATHS){
+    if(mode & MODE_DISPLAY_PATHS && mode & MODE_DISPLAY_DIRS){
         if(root_dir)
             if(*root_dir){
-                printf("%s",root_dir);
-                if(mode & MODE_DISPLAY_FILES || path->used>1){
-                    printf("/");
-                }
+                printf("%s/",root_dir);
             }
-        for(c=0;c<path->used-1;c++){
-            printf("%s",path->values[c].str);
+        if(mode & MODE_DISPLAY_DIRS){
+            for(c=0;c<path->used-1;c++){
+                printf("%s/",path->values[c].str); /*if we use mode = MODE_DISPLAY_PATHS | MODE_DISPLAY_DIRS, we prints last '\'. Right now it's feature*/
+            }
         }
-        printf("%s%c",path->values[path->used-1].str,finish);
+        if(mode & MODE_DISPLAY_FILES)
+            printf("%s",path->values[path->used-1].str);
+        if(mode & MODE_DISPLAY_FILES || mode & MODE_DISPLAY_DIRS)
+            printf("%c",finish);
     }else{/*no paths - prints items per-line*/
         if(mode & MODE_DISPLAY_DIRS){
             for(c=0;c<path->used-1;c++){
