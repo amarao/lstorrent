@@ -29,7 +29,7 @@ int main(int argc, char* argv[]){
     dict_t *torrent;
     struct stat st;    
     int c;
-    int display_mode=3;
+    int display_mode=7;
     if (argc<2){
         puts(err_help);
         exit(0);

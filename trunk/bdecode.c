@@ -39,15 +39,21 @@ void* decode_num(unsigned char *buf, int *index, size_t size){
     string format (input: i99...999e; output: i99...999\0, we return pointer to first char after 'i')
 */
     void* data=buf+*index+1;
-    if( !buf || !index)
-        oops(err_internal);        
-    if (size<3)
-        oops(err_bad);
+    if( !buf || !index){
+	        oops(err_internal);
+		return NULL;
+	}
+    if (size<3){
+	        oops(err_bad);
+		return NULL;
+	}
     NEXT;
     last=0;
     while(CUR!='e'){ 
-        if (!isdigit(CUR))
+        if (!isdigit(CUR)){
             oops(err_bad);
+	    return NULL;
+	}
         NEXT;
     }
     CUR=0; /*we replace 'e' at the end by \0 to make number type be a char* */
@@ -69,8 +75,10 @@ void* decode_string(unsigned char* buf, int *index, size_t size){
 
     size_t str_len=0;
     void* retval;
-    if (size<2)
-        oops(err_bad);
+    if (size<2){
+	        oops(err_bad);
+		return NULL;
+	}
 //    printf("[in_decode_str]last:%d(%c), cur %d(%c), *index=%X\n",last,last,CUR,CUR,*index);
     if (last)
          str_len=last-'0';
@@ -111,10 +119,14 @@ dict_t* decode_dict(unsigned char *buf, int *index, size_t size){
     void  *value;
     int type;
     int cmp;
-    if( !buf || !index)
+    if( !buf || !index){
         oops(err_internal);        
-    if (size<2)
+		return NULL;
+	}	
+    if (size<2){
         oops(err_bad);
+	return NULL;
+	}
     NEXT;
     last=0;
 //    printf("enter a dict:%X\n",*index);
@@ -149,10 +161,14 @@ list_t* decode_list(unsigned char *buf, int *index, size_t size){
     void* value;
     int type;
     char cmp=0;
-    if( !buf || !index)
+    if( !buf || !index){
         oops(err_internal);        
-    if (size<2)
+	return NULL;
+	}
+    if (size<2){
         oops(err_bad);
+	return NULL;
+	}
     NEXT;
     last=0;
 /*  here we got result of dirty hack in decode_string: 
@@ -179,10 +195,14 @@ void* decode(unsigned char *buf, int *index, int *type, size_t size){
 /*decode anything with autodetection. For dicts/lists become recursive*/
     void *retval=NULL;
     char cmp;
-    if( !buf || !index)
-        oops(err_internal);        
-    if (!size || *index+1>=size)
-        oops(err_bad);
+    if( !buf || !index){
+	        oops(err_internal);
+		return NULL;
+	}
+    if (!size || *index+1>=size){
+        	oops(err_bad);
+		return NULL;
+	}
 
 /*  here we got result of dirty hack of decode_string (or not got!) 
     or current char keeps in 'last', or (if last is zero), current char in untoched*/
@@ -211,6 +231,7 @@ void* decode(unsigned char *buf, int *index, int *type, size_t size){
             }
             else{
                 oops(err_bad);
+		return NULL;
             }
     }
 //	printf("debug: decode=(%d)%s\n",*type,retval);
