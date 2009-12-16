@@ -17,11 +17,11 @@ OPTIONS
                     do not display directories (only files are listed, one per line)
     -f, --no-files 
                     do not display files (display only directories)
-    -l, --list      
+    -p, --no-paths      
                     do not display paths, only print directories/files one per line
-                    note:  duplicate entries are not filtering.
+                    note:  duplicate entries are not filtered.
     -0, --zero
-                    separate entries by '\x00' char instead '\n' (like "find -print0", for use with "xargs -0")
+                    separate entries by '\x00' instead '\n' (like "find -print0", for use with "xargs -0")
 
     -s, --size
                     print files size (if no files, no size printed)
