@@ -26,7 +26,7 @@
 #include "ui.h"
 
 #define DEBUG 1
-#define NEXT (*index)++; if (*index>size) oops_message (err_uncomplete,__LINE__);
+#define NEXT (*index)++; if (*index>size){ oops_message (err_uncomplete,__LINE__); return NULL;};
 #define CUR (buf[*index])
 #define MAX_STRING 15*1024*1024
 
@@ -40,20 +40,20 @@ void* decode_num(unsigned char *buf, int *index, size_t size){
 */
     void* data=buf+*index+1;
     if( !buf || !index){
-	        oops(err_internal);
-		return NULL;
-	}
+        oops(err_internal);
+        return NULL;
+    }
     if (size<3){
-	        oops(err_bad);
-		return NULL;
+        oops(err_bad);
+        return NULL;
 	}
     NEXT;
     last=0;
     while(CUR!='e'){ 
         if (!isdigit(CUR)){
             oops(err_bad);
-	    return NULL;
-	}
+            return NULL;
+	    }
         NEXT;
     }
     CUR=0; /*we replace 'e' at the end by \0 to make number type be a char* */
@@ -76,8 +76,8 @@ void* decode_string(unsigned char* buf, int *index, size_t size){
     size_t str_len=0;
     void* retval;
     if (size<2){
-	        oops(err_bad);
-		return NULL;
+        oops(err_bad);
+        return NULL;
 	}
 //    printf("[in_decode_str]last:%d(%c), cur %d(%c), *index=%X\n",last,last,CUR,CUR,*index);
     if (last)
@@ -103,6 +103,7 @@ void* decode_string(unsigned char* buf, int *index, size_t size){
         NEXT;
     }else{
         oops(err_bad);
+        return NULL;
     }
     retval=buf+(*index);
     (*index)+=str_len;
@@ -119,37 +120,29 @@ dict_t* decode_dict(unsigned char *buf, int *index, size_t size){
     void  *value;
     int type;
     int cmp;
-    if( !buf || !index){
-        oops(err_internal);        
-		return NULL;
-	}	
     if (size<2){
         oops(err_bad);
-	return NULL;
+    	return NULL;
 	}
     NEXT;
     last=0;
-//    printf("enter a dict:%X\n",*index);
 /*  here we got result of dirty hack in decode_string: 
     last MUST contain here or sero (and then CUR='d') or last='d' (and then CUR='\0'). 
     In any case this does not matter - skip
 */
     do{
         key=decode_string(buf,index,size);
-//	printf("decode_key=%s\n",key);
+        if(!key)
+            return NULL;
         value=decode(buf,index,&type,size);
-//	printf("decode_value=%s\n",value);
+        if (!value)
+            return NULL;
         add_to_dict(&retval,key,type,value);
-//    printf("(after adding a rec)last:%d(%c), cur:%d(%c),*index=%X\n",last,last,CUR,CUR,*index);
-    
         if (last)/*we handle here a dirty hack*/
             cmp=last;
         else
             cmp=CUR;
-//        printf("Next char is %d(%c)\n",cmp,cmp);
-//        last=0;
     }while(cmp!='e');
-//    printf("dict_end=%X\n",*index);
     NEXT;
 	last=0;
     return retval;
@@ -161,13 +154,9 @@ list_t* decode_list(unsigned char *buf, int *index, size_t size){
     void* value;
     int type;
     char cmp=0;
-    if( !buf || !index){
-        oops(err_internal);        
-	return NULL;
-	}
     if (size<2){
         oops(err_bad);
-	return NULL;
+    	return NULL;
 	}
     NEXT;
     last=0;
@@ -177,13 +166,14 @@ list_t* decode_list(unsigned char *buf, int *index, size_t size){
 */
     do{
         value=decode(buf,index,&type,size);
+        if(!value)
+            return NULL;
         add_to_list(retval,type,value);
         if (last)/*we handle here a dirty hack*/
             cmp=last;
         else
             cmp=CUR;
     }while(cmp!='e');
-//    printf("list_end=%X\n",*index);
     NEXT;
 	last=0;
     return retval;
@@ -195,13 +185,9 @@ void* decode(unsigned char *buf, int *index, int *type, size_t size){
 /*decode anything with autodetection. For dicts/lists become recursive*/
     void *retval=NULL;
     char cmp;
-    if( !buf || !index){
-	        oops(err_internal);
-		return NULL;
-	}
     if (!size || *index+1>=size){
         	oops(err_bad);
-		return NULL;
+		    return NULL;
 	}
 
 /*  here we got result of dirty hack of decode_string (or not got!) 
@@ -213,25 +199,33 @@ void* decode(unsigned char *buf, int *index, int *type, size_t size){
     switch (cmp){
         case 'i':
             retval=decode_num(buf,index,size);
+            if(!retval)
+                return NULL;
             *type=str_et; /*yes, we decode numbers as strings, if someone decide to process it - atoi() will help*/
             break;
         case 'd':
             retval=decode_dict(buf,index,size);
+            if(!retval)
+                return NULL;
             *type=dict_et;
             break;
         case 'l':
             retval=decode_list(buf,index,size);
+            if(!retval)
+                return NULL;
             *type=list_et;
             break;
         default:
             if(isdigit(cmp)){ /*note - not isdigit(CUR), but isdigit (cmp) - see note above about dirty hack*/
                 retval=decode_string(buf,index,size);
+                if(!retval)
+                    return NULL;
                 *type=str_et;
                 break;
             }
             else{
                 oops(err_bad);
-		return NULL;
+                return NULL;
             }
     }
 //	printf("debug: decode=(%d)%s\n",*type,retval);
