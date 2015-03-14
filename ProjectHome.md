@@ -1,0 +1,1 @@
+Allow to view list of files in `*`.torrent file from command line with controllable output (only files, files and catalogs, files with relative paths, etc).
